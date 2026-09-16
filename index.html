@@ -555,6 +555,47 @@
   .legend-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12.5px; padding: 5px 0; }
   .two-col { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 14px; align-items: start; }
 
+  /* ---------- Plan semanal: acordeón en móvil ---------- */
+  .week-list { display: none; }
+  .week-item {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-m);
+    background: var(--surface);
+    margin-bottom: 8px;
+    overflow: hidden;
+  }
+  .week-item.is-current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .week-item > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    min-height: var(--tap);
+    cursor: pointer;
+    list-style: none;
+    font-size: 13.5px;
+  }
+  .week-item > summary::-webkit-details-marker { display: none; }
+  .week-item > summary::after {
+    content: "";
+    flex: none;
+    width: 8px; height: 8px;
+    border-right: 2px solid var(--ink-faint);
+    border-bottom: 2px solid var(--ink-faint);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform .2s var(--ease);
+  }
+  .week-item[open] > summary::after { transform: rotate(-135deg) translateY(1px); }
+  .week-when { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; min-width: 0; }
+  .week-range { color: var(--ink-soft); white-space: nowrap; }
+  .week-avail { margin-left: auto; font-weight: 600; white-space: nowrap; }
+  .week-detail { padding: 2px 14px 12px; border-top: 1px dashed var(--border); }
+  .week-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 7px 0; font-size: 13px; color: var(--ink-soft);
+  }
+  .week-row b { color: var(--ink); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
   /* Boton flotante de accion rapida (solo movil) */
   .fab { display: none; }
   .only-mobile { display: none; }
@@ -689,6 +730,10 @@
     .mobile-tabbar .nav-item[aria-current="page"] .nav-icon { stroke-width: 2.1; }
     .mobile-tabbar .nav-icon { width: 21px; height: 21px; }
 
+    /* La tabla de 8 columnas cede su lugar al acordeón */
+    .week-table { display: none; }
+    .week-list { display: block; }
+
     /* Accion rapida flotante */
     .fab {
       display: grid;
@@ -708,6 +753,10 @@
     }
     .fab:active { transform: scale(0.92); }
     .fab svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+    /* En Configuración y Copia de seguridad no se registran movimientos:
+       ahí el botón flotante solo tapaba los botones de la pantalla. */
+    body[data-screen="config"] .fab,
+    body[data-screen="datos"] .fab { display: none; }
 
     /* Modal como hoja inferior */
     .modal-backdrop { align-items: flex-end; padding: 0; }
@@ -5103,6 +5152,9 @@ window.App = window.App || {};
 
   function switchScreen(screen) {
     currentScreen = screen;
+    // Permite que el CSS reaccione a la pantalla activa (p. ej. esconder el
+    // botón flotante donde no se registran movimientos).
+    document.body.dataset.screen = screen;
     $$('.nav-item').forEach(function (b) {
       if (b.dataset.nav === screen) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
@@ -5876,6 +5928,43 @@ window.App = window.App || {};
   // PLAN SEMANAL
   // =========================================================================
 
+  // La tabla semanal tiene 8 columnas × 13 semanas: apilada como tarjetas
+  // serían más de cien filas de scroll. En móvil se muestra en su lugar un
+  // acordeón — una línea por semana con el dato que de verdad se busca
+  // (el disponible), y el desglose al desplegar. La semana actual abre sola.
+  var WEEK_METRICS = [
+    { label: 'Ingreso esperado', key: 'expectedIncomeCents', cls: '' },
+    { label: 'Ingreso recibido', key: 'receivedIncomeCents', cls: 'amount-in' },
+    { label: 'Gastos previstos', key: 'plannedExpensesCents', cls: 'amount-out' },
+    { label: 'Reservas', key: 'pendingReservesCents', cls: '' },
+    { label: 'Ahorro planificado', key: 'plannedSavingsCents', cls: '' },
+    { label: 'Ahorro real', key: 'actualSavingsCents', cls: 'amount-in' }
+  ];
+
+  function weekTagHtml(r) {
+    if (r.isHistorical) return '<span class="pill pill-neutral">Real</span>';
+    if (r.isProjection) return '<span class="pill pill-warn">Proyección</span>';
+    return '<span class="pill pill-ok">Esta semana</span>';
+  }
+
+  function weekListHtml(rows) {
+    return '<div class="week-list">' + rows.map(function (r) {
+      var esActual = !r.isHistorical && !r.isProjection;
+      var tono = r.availableToSpendCents < 0 ? ' amount-out' : (r.availableToSpendCents > 0 ? ' amount-in' : '');
+      return '<details class="week-item' + (esActual ? ' is-current' : '') + '"' + (esActual ? ' open' : '') + '>' +
+        '<summary>' +
+        '<span class="week-when">' + weekTagHtml(r) +
+        '<span class="week-range">' + displayDateShort(r.weekStartISO) + '–' + displayDateShort(r.weekEndISO) + '</span></span>' +
+        '<span class="week-avail amount' + tono + '">' + fmt(r.availableToSpendCents) + '</span>' +
+        '</summary>' +
+        '<div class="week-detail">' +
+        WEEK_METRICS.map(function (m) {
+          return '<div class="week-row"><span>' + esc(m.label) + '</span><b class="' + m.cls + '">' + fmt(r[m.key]) + '</b></div>';
+        }).join('') +
+        '</div></details>';
+    }).join('') + '</div>';
+  }
+
   function renderSemana() {
     var el = $('#screen-semana');
     var today = D.today();
@@ -5885,7 +5974,8 @@ window.App = window.App || {};
       '<div class="topbar"><div><h1>Plan semanal</h1><div class="topbar-sub">Semanas reales (izquierda) y proyectadas (derecha)</div></div></div>' +
 
       '<div class="card section">' +
-      '<div class="table-wrap"><table><thead><tr>' +
+      weekListHtml(rows) +
+      '<div class="table-wrap week-table"><table><thead><tr>' +
       '<th>Semana</th><th style="text-align:right">Ingreso esperado</th><th style="text-align:right">Ingreso recibido</th>' +
       '<th style="text-align:right">Gastos previstos</th><th style="text-align:right">Reservas</th>' +
       '<th style="text-align:right">Ahorro plan.</th><th style="text-align:right">Ahorro real</th><th style="text-align:right">Disponible</th></tr></thead><tbody>' +
