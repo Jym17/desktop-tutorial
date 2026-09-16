@@ -105,14 +105,23 @@ PNG, así que no depende de ninguna tipografía instalada en el dispositivo.
 
 | Archivo | Tamaño | Detalle |
 |---|---|---|
-| `icons/icon-192.png` | 192 | esquina redondeada propia |
-| `icons/icon-512.png` | 512 | esquina redondeada propia |
-| `icons/icon-maskable-512.png` | 512 | a sangre, signo al 66% (zona segura de Android) |
-| `icons/apple-touch-icon.png` | 180 | a sangre, sin redondear (iOS aplica su máscara) |
+| `icons/icon-192-v2.png` | 192 | esquina redondeada propia |
+| `icons/icon-512-v2.png` | 512 | esquina redondeada propia |
+| `icons/icon-maskable-512-v2.png` | 512 | a sangre, signo al 66% (zona segura de Android) |
+| `icons/apple-touch-icon-v2.png` | 180 | a sangre, sin redondear (iOS aplica su máscara) |
 | `favicon.ico` | 32 | pestaña del navegador |
 
-Al reemplazarlos hay que **subir el número de `VERSION` en `sw.js`**, o los
-dispositivos seguirán sirviendo los íconos viejos desde su caché.
+Al cambiar el diseño hay que hacer DOS cosas, no una:
+
+1. **Renombrar los archivos** (`-v2` → `-v3`…) y actualizar sus referencias en
+   `index.html`, `manifest.webmanifest` y `sw.js`. Una URL nueva no puede
+   servirse desde ninguna caché: ni el CDN de Pages, ni el navegador, ni el
+   service worker, ni iOS.
+2. **Subir el `VERSION` de `sw.js`**, para que los dispositivos ya instalados
+   descarten la caché anterior.
+
+Saltarse el punto 1 es la causa clásica de "cambié el ícono y sigue saliendo
+el viejo".
 
 En iPhone, además, el ícono de la pantalla de inicio queda cacheado por el
 sistema: hay que borrar la app de la pantalla y volver a añadirla desde Safari.

@@ -16,16 +16,16 @@
 // Subir este número invalida la caché anterior. Hay que hacerlo cada vez que
 // cambie el "envoltorio" (íconos, manifiesto), o el dispositivo seguiría
 // sirviendo los archivos viejos que ya tiene guardados.
-var VERSION = 'cuentas-claras-v2';
+var VERSION = 'cuentas-claras-v3';
 var SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './favicon.ico',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon.png'
+  './icons/icon-192-v2.png',
+  './icons/icon-512-v2.png',
+  './icons/icon-maskable-512-v2.png',
+  './icons/apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', function (event) {
