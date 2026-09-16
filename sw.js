@@ -16,11 +16,11 @@
 // Subir este número invalida la caché anterior. Hay que hacerlo cada vez que
 // cambie el "envoltorio" (íconos, manifiesto), o el dispositivo seguiría
 // sirviendo los archivos viejos que ya tiene guardados.
-var VERSION = 'cuentas-claras-v3';
+var VERSION = 'cuentas-claras-v4';
 var SHELL = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.json',
   './favicon.ico',
   './icons/icon-192-v2.png',
   './icons/icon-512-v2.png',
@@ -73,6 +73,11 @@ self.addEventListener('fetch', function (event) {
     );
     return;
   }
+
+  // Los íconos y el manifiesto NUNCA pasan por aquí: si el service worker
+  // fallara al servirlos, el sistema operativo se queda sin ícono y dibuja su
+  // comodín genérico. Van siempre directos a la red.
+  if (/(^|\/)(icons\/|apple-touch-icon|favicon\.ico|manifest\.json)/.test(url.pathname)) return;
 
   var mismoOrigen = url.origin === self.location.origin;
   var esFuente = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';

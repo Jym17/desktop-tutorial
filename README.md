@@ -53,7 +53,7 @@ El `.gitignore` los excluye a propósito: no los subas al repositorio.
 ```
 index.html              la app completa (estilos, módulos y lógica)
 sw.js                   service worker (modo sin conexión)
-manifest.webmanifest    metadatos de instalación
+manifest.json           metadatos de instalación
 icons/                  iconos de la app
 ```
 
