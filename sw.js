@@ -13,12 +13,15 @@
  *   - Recursos estáticos: caché primero y refresco en segundo plano.
  */
 
-var VERSION = 'cuentas-claras-v1';
+// Subir este número invalida la caché anterior. Hay que hacerlo cada vez que
+// cambie el "envoltorio" (íconos, manifiesto), o el dispositivo seguiría
+// sirviendo los archivos viejos que ya tiene guardados.
+var VERSION = 'cuentas-claras-v2';
 var SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './icons/icon.svg',
+  './favicon.ico',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',

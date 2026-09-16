@@ -64,7 +64,7 @@ regla práctica es exportar el respaldo JSON de vez en cuando.
 | `index.html` | La app completa: interfaz, cálculos y persistencia |
 | `manifest.webmanifest` | Nombre, íconos y modo pantalla completa al instalar |
 | `sw.js` | Service worker: arranque instantáneo y modo sin conexión |
-| `icons/` | Íconos de la app (SVG fuente + PNG generados) |
+| `icons/` | Íconos de la app: el signo § crema sobre dorado |
 | `favicon.ico` | Ícono de la pestaña del navegador |
 
 Dentro de `index.html`, el código está separado por módulos comentados:
@@ -98,8 +98,22 @@ App.calc.tx.__runTests(); App.calc.savings.__runTests();
 App.planner.__runTests(); App.state.__runTests();
 ```
 
-## Regenerar los íconos
+## Cambiar el ícono
 
-Los PNG salen de los SVG de `icons/`. Si cambias el diseño, vuelve a
-rasterizarlos con cualquier herramienta a 192, 512 (normal y *maskable*) y 180
-píxeles (`apple-touch-icon.png`).
+El set son cinco archivos rasterizados, sin SVG: el glifo va "quemado" en el
+PNG, así que no depende de ninguna tipografía instalada en el dispositivo.
+
+| Archivo | Tamaño | Detalle |
+|---|---|---|
+| `icons/icon-192.png` | 192 | esquina redondeada propia |
+| `icons/icon-512.png` | 512 | esquina redondeada propia |
+| `icons/icon-maskable-512.png` | 512 | a sangre, signo al 66% (zona segura de Android) |
+| `icons/apple-touch-icon.png` | 180 | a sangre, sin redondear (iOS aplica su máscara) |
+| `favicon.ico` | 32 | pestaña del navegador |
+
+Al reemplazarlos hay que **subir el número de `VERSION` en `sw.js`**, o los
+dispositivos seguirán sirviendo los íconos viejos desde su caché.
+
+En iPhone, además, el ícono de la pantalla de inicio queda cacheado por el
+sistema: hay que borrar la app de la pantalla y volver a añadirla desde Safari.
+Los datos no se pierden, viven en el navegador.
