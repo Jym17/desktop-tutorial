@@ -1,0 +1,7 @@
+# Respaldos de datos personales: NUNCA deben entrar al repositorio.
+# Un JSON de Cuentas Claras contiene saldos, ingresos y cada movimiento.
+# Una vez subido queda en el historial de git aunque luego se borre.
+respaldo*.json
+*-respaldo.json
+transacciones*.csv
+datos-personales/
